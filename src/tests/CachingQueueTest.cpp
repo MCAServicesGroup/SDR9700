@@ -72,7 +72,20 @@ class CachingQueueTest : public QObject
 
 void CachingQueueTest::init()
 {
-    CachingQueue::getInstance()->resetSessionState();
+    CachingQueue* queue = CachingQueue::getInstance();
+    queue->resetSessionState();
+
+    // A previous test can leave the worker emitting a batch after it dropped
+    // the queue mutex, and resetSessionState() cannot recall that batch.
+    // Connecting a receiver during that emission is unordered with the
+    // worker's read of the new slot object, and the stale batch would also be
+    // counted by the next test. Wait until the worker parks with no work.
+    QTRY_VERIFY(
+        [queue]()
+        {
+            std::lock_guard locker(queue->mutex);
+            return queue->m_workerIdle && queue->items.isEmpty() && queue->queue.isEmpty();
+        }());
 }
 
 void CachingQueueTest::cleanupTestCase()

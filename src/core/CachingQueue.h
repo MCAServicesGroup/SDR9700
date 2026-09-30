@@ -218,6 +218,11 @@ class CachingQueue : public QObject
     // this to distinguish a command wake from a cache-value wake so queued
     // readbacks run immediately without accelerating periodic cache traffic.
     bool m_queueWakeRequested{false};
+    // Set while holding mutex when the worker blocks with no queued work. The
+    // worker last touched signal receivers before it reacquired mutex to set
+    // this, so a thread that observes it under mutex is ordered after every
+    // completed emission.
+    bool m_workerIdle{false};
     qsizetype m_queueHighWaterMark{0};
     quint64 m_dispatchedCommands{0};
     quint64 m_droppedForCapacity{0};

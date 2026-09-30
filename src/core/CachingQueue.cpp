@@ -114,8 +114,10 @@ void CachingQueue::run()
             // protected state before sleeping. Without this predicate, the
             // final radio reply in a quiet period can remain stranded until a
             // later value or command happens to wake the worker.
+            m_workerIdle = true;
             waiting.wait(locker, [this]()
                          { return aborted.load(std::memory_order_acquire) || !items.isEmpty() || !queue.isEmpty(); });
+            m_workerIdle = false;
         }
         else
         {

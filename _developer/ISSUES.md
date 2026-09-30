@@ -46,4 +46,28 @@ No open issues are currently recorded.
 
 ## Resolved Issues
 
-No resolved issues are currently recorded.
+### SDR-0001: Intermittent ThreadSanitizer race in CachingQueueTest
+
+- Status: `resolved`
+- Severity: `medium`
+- Area: Nightly Analysis ThreadSanitizer job, `src/tests/CachingQueueTest.cpp`
+- Identified: 2026-09-29 during review of the failed scheduled Nightly
+  Analysis run 36585988851 on commit `047b2fe`
+- Evidence: TSan reported a data race in
+  `CachingQueueTest::deliversValueArrivingDuringBatchEmission` between the
+  main thread constructing a `sendValues` slot object in `connect()` and the
+  `CachingQueue` worker invoking it. The worker was still emitting a batch left
+  by `emitsCacheChangesWithoutHoldingMutex`; `resetSessionState()` in
+  `init()` cannot recall a batch already moved out of `items`, and the
+  uninstrumented distribution Qt hides Qt's own connection-list ordering from
+  TSan. The original test reproduced the report in 54 of 200 local macOS TSan
+  runs.
+- Impact: The nightly TSan job failed intermittently, and the stale batch
+  could be counted as the test's first emission so the lost-wakeup regression
+  test could pass without exercising its window.
+- Resolution: 2026-09-29. `CachingQueue` records `m_workerIdle` under its
+  mutex while the worker blocks with no work, and `CachingQueueTest::init()`
+  waits for an idle worker with empty queues before each test connects
+  receivers. The fixed test passed 100 consecutive local TSan runs and the
+  full local TSan suite passes.
+- Related: `src/core/CachingQueue.cpp`, `src/tests/CachingQueueTest.cpp`
