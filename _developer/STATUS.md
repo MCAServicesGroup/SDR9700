@@ -17,8 +17,9 @@ current source version is `26.9.4`.
 ## Current Work
 
 - The `qt_6_12_migration` branch raises the minimum supported Qt version to
-  6.12.0 and provides a local Qt SDK setup target. Local Linux Release and GPU
-  builds pass; Apple Silicon CI, packaging, and hardware validation remain.
+  6.12.0 and provides a local Qt SDK setup target. Linux and Apple Silicon CI
+  builds, tests, Metal rendering, and the unsigned macOS bundle audit pass.
+  Signed DMG/notarization and radio/audio hardware validation remain.
 - macOS releases now use a draft-first process: dispatch the release workflow
   from `main` for an existing signed version tag, then publish the draft only
   after the packaged DMG and release notes are reviewed.
@@ -38,8 +39,12 @@ current source version is `26.9.4`.
 - A clean Linux GPU-panadapter build and all 40 tests pass against Qt 6.12.0,
   using a temporary X server and software Vulkan for the three GPU tests.
 - The clang-format 23 and cppcheck 2.21.0 source checks pass.
-- Apple Silicon build, Metal rendering, bundle packaging, and radio/audio
-  hardware behavior have not yet been validated on this branch.
+- GitHub Build run `37158990926` passes the Linux, Linux without HIDAPI,
+  Linux GPU panadapter, and Apple Silicon jobs. The Apple Silicon job passes
+  Metal rendering tests, the full test suite, and the self-contained bundle
+  audit with the official macOS 15.0 floor.
+- A signed, notarized Qt 6.12 DMG and radio/audio hardware behavior have not
+  yet been validated on this branch.
 
 ## Pre-Migration Validation State
 
