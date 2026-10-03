@@ -30,7 +30,8 @@ check_bundled_path()
     candidate="${1}"
     source_path="${2}"
     description="${3}"
-    if [ ! -e "${candidate}" ]; then
+    require_existing="${4:-yes}"
+    if [ "${require_existing}" = yes ] && [ ! -e "${candidate}" ]; then
         echo "${source_path}: missing ${description}" >>"${errors_file}"
         return
     fi
@@ -65,13 +66,13 @@ else
     fi
 fi
 
-expected_macos_version="$(sed -n 's/^QT_MIN_MACOS=//p' _developer/qt/qt_pin.env)"
+expected_macos_version="$(sed -n 's/^SDR9700_MACOS_RELEASE_MIN_VERSION=//p' resources/packaging/macos/release_pin.env)"
 bundle_macos_version="$(plutil -extract LSMinimumSystemVersion raw -o - "${contents_path}/Info.plist")" || {
     echo "Cannot read the application minimum macOS version" >>"${errors_file}"
     bundle_macos_version=""
 }
 if [ -z "${expected_macos_version}" ] || [ "${bundle_macos_version}" != "${expected_macos_version}" ]; then
-    echo "Application minimum macOS version ${bundle_macos_version} does not match Qt SDK floor ${expected_macos_version}" >>"${errors_file}"
+    echo "Application minimum macOS version ${bundle_macos_version} does not match release floor ${expected_macos_version}" >>"${errors_file}"
 fi
 
 for required_plugin in \
@@ -178,10 +179,10 @@ while IFS= read -r binary_path; do
     ' | while IFS= read -r rpath; do
         case "${rpath}" in
         @loader_path/*)
-            check_bundled_path "$(dirname "${binary_path}")/${rpath#@loader_path/}" "${binary_path}" "rpath ${rpath}"
+            check_bundled_path "$(dirname "${binary_path}")/${rpath#@loader_path/}" "${binary_path}" "rpath ${rpath}" no
             ;;
         @executable_path/*)
-            check_bundled_path "${contents_path}/MacOS/${rpath#@executable_path/}" "${binary_path}" "rpath ${rpath}"
+            check_bundled_path "${contents_path}/MacOS/${rpath#@executable_path/}" "${binary_path}" "rpath ${rpath}" no
             ;;
         *)
             echo "${binary_path}: external rpath ${rpath}" >>"${errors_file}"

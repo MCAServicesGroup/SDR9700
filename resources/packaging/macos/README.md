@@ -18,6 +18,12 @@ remain in place. The pinned Qt setup checks the exact package revision, and
 the bundle audit checks its QtCore version, self-contained dependencies, and
 minimum macOS version before signing.
 
+The official DMG requires macOS 15.0 or newer, recorded in
+`resources/packaging/macos/release_pin.env`. Qt 6.12 itself supports macOS
+14.4, but bundled Homebrew libraries from the macos-15 runner require 15.0.
+The bundle audit compares the app's declared minimum with the release pin and
+rejects any bundled Mach-O binary that needs a newer system.
+
 Configure these GitHub Actions environment secrets before running the workflow:
 
 - `APPLE_CERT_BASE64`: Base64-encoded PKCS#12 (`.p12`) export containing the

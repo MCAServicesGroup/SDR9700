@@ -1,14 +1,15 @@
 cmake_minimum_required(VERSION 3.25)
 if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Darwin")
-    file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/_developer/qt/qt_pin.env" SDR9700_QT_MACOS_FLOOR
-        REGEX "^QT_MIN_MACOS=[0-9]+\\.[0-9]+$")
-    if(NOT SDR9700_QT_MACOS_FLOOR)
-        message(FATAL_ERROR "The pinned Qt SDK must define QT_MIN_MACOS.")
+    file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/resources/packaging/macos/release_pin.env"
+        SDR9700_MACOS_RELEASE_MIN_VERSION_LINE REGEX "^SDR9700_MACOS_RELEASE_MIN_VERSION=[0-9]+\\.[0-9]+$")
+    if(NOT SDR9700_MACOS_RELEASE_MIN_VERSION_LINE)
+        message(FATAL_ERROR "The macOS release package must define SDR9700_MACOS_RELEASE_MIN_VERSION.")
     endif()
-    string(REGEX REPLACE "^QT_MIN_MACOS=" "" SDR9700_QT_MACOS_FLOOR "${SDR9700_QT_MACOS_FLOOR}")
+    string(REGEX REPLACE "^SDR9700_MACOS_RELEASE_MIN_VERSION=" "" SDR9700_MACOS_RELEASE_MIN_VERSION
+        "${SDR9700_MACOS_RELEASE_MIN_VERSION_LINE}")
     if(NOT DEFINED CMAKE_OSX_DEPLOYMENT_TARGET OR CMAKE_OSX_DEPLOYMENT_TARGET STREQUAL "")
-        set(CMAKE_OSX_DEPLOYMENT_TARGET "${SDR9700_QT_MACOS_FLOOR}" CACHE STRING
-            "Minimum macOS version required by the pinned Qt SDK")
+        set(CMAKE_OSX_DEPLOYMENT_TARGET "${SDR9700_MACOS_RELEASE_MIN_VERSION}" CACHE STRING
+            "Default minimum macOS version for the official release package")
     endif()
 endif()
 project(SDR9700 VERSION 26.9.4 LANGUAGES C CXX)

@@ -44,7 +44,7 @@ outside the immediate task.
 
 ### SDR-0006: Apple release secrets remain at repository scope
 
-- Status: `open`
+- Status: `deferred`
 - Severity: `high`
 - Area: GitHub Actions release credentials
 - Identified: 2026-10-03 while configuring the `macos_release` environment
@@ -53,12 +53,47 @@ outside the immediate task.
   notarization secret names remain configured at repository scope.
 - Impact: Other workflows can still access the repository-scoped credentials,
   so the release environment does not yet isolate them.
-- Next action: Re-enter the five Apple secrets in `macos_release` from the
-  maintainer's originals, verify their names, then delete the repository-scoped
-  copies before using the new release workflow.
+- Next action: When the maintainer is ready to move the secrets, re-enter the
+  five Apple secrets in `macos_release` from the originals, verify their names,
+  then delete the repository-scoped copies. The maintainer requested on
+  2026-10-03 that repository-scoped copies remain for now.
 - Related: `resources/packaging/macos/README.md`, `.github/workflows/release_macos.yml`
 
 ## Resolved Issues
+
+### SDR-0008: Bundle audit rejected unused in-bundle rpaths
+
+- Status: `resolved`
+- Severity: `medium`
+- Area: macOS bundle verification
+- Identified: 2026-10-03 in Apple Silicon CI run `37157912537`
+- Evidence: Qt plugins carried `@loader_path/../../lib` rpaths whose directories
+  were absent from the staged bundle. All linked dependencies resolved through
+  other bundled paths, but `verify_macos_bundle.sh` failed on the absent rpath
+  directories.
+- Impact: A self-contained bundle could fail packaging even though the unused
+  rpaths did not prevent loading.
+- Resolution: 2026-10-03. The audit allows absent rpath directories only when
+  their canonical paths remain inside the bundle; linked dependency targets
+  must still exist inside it.
+- Related: `resources/packaging/macos/scripts/verify_macos_bundle.sh`
+
+### SDR-0007: Bundled libraries required macOS 15 above the declared floor
+
+- Status: `resolved`
+- Severity: `high`
+- Area: Apple Silicon macOS packaging
+- Identified: 2026-10-03 in Apple Silicon CI run `37157912537`
+- Evidence: The bundle declared macOS 14.4, but Homebrew builds of OpenSSL,
+  HIDAPI, SpeexDSP, and Opus bundled by the macos-15 job have Mach-O minimum
+  version 15.0. The bundle audit caught the mismatch.
+- Impact: The DMG could be advertised for Macs on which bundled libraries
+  cannot load.
+- Resolution: 2026-10-03. With the maintainer's decision, the official DMG
+  minimum is 15.0. CMake, Info.plist, documentation, and the bundle audit use
+  the release floor separately from Qt's own 14.4 minimum.
+- Related: `resources/packaging/macos/release_pin.env`, `CMakeLists.txt`,
+  `resources/packaging/macos/scripts/verify_macos_bundle.sh`
 
 ### SDR-0005: macOS bundle did not verify its Qt version
 

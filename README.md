@@ -113,10 +113,11 @@ Download the `SDR9700-<version>-macOS-apple-silicon.dmg` from the
 [latest SDR9700 release](https://github.com/MCAServicesGroup/sdr9700/releases/latest), open
 it, and drag SDR9700 into Applications.
 
-The release application includes Qt and its other runtime libraries. Users do
-not need Homebrew, a separate Qt installation, or any other developer package
-to run SDR9700. macOS will request local-network and microphone access because
-the application communicates with the radio and can send transmit audio.
+The official DMG requires macOS 15.0 or newer. The release application includes
+Qt and its other runtime libraries. Users do not need Homebrew, a separate Qt
+installation, or any other developer package to run SDR9700. macOS will request
+local-network and microphone access because the application communicates with
+the radio and can send transmit audio.
 
 ### Linux
 
@@ -193,7 +194,10 @@ Launch the built application with diagnostics enabled:
 ### macOS (Apple Silicon)
 
 Install Xcode 16 or newer and select it with `xcode-select`. The pinned Qt
-SDK requires macOS 14.4 or newer.
+SDK requires macOS 14.4 or newer. The official DMG targets macOS 15.0 because
+its bundled third-party libraries require that version. CMake defaults source
+builds to the same deployment target; builders using dependencies with a lower
+minimum can set `CMAKE_OSX_DEPLOYMENT_TARGET` explicitly.
 
 Use Homebrew to install the build dependencies:
 

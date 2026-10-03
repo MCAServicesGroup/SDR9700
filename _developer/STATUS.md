@@ -23,8 +23,8 @@ current source version is `26.9.4`.
   from `main` for an existing signed version tag, then publish the draft only
   after the packaged DMG and release notes are reviewed.
 - The `macos_release` GitHub environment has a `main`-only deployment policy
-  and required maintainer review. Its Apple secrets still need to be moved
-  from repository scope into the environment before the new workflow is used.
+  and required maintainer review. The Apple secrets remain at repository scope
+  at the maintainer's request; their move into the environment is deferred.
 - Keep the normal Linux and Apple Silicon macOS build and test workflows green.
 - Preserve hardware-independent automated coverage; radio-dependent behavior
   still requires explicit IC-9700 validation.
