@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - qt_6_12_migration
     tags:
       - 'ci-*'
   pull_request:

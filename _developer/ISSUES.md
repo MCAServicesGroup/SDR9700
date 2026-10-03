@@ -61,6 +61,23 @@ outside the immediate task.
 
 ## Resolved Issues
 
+### SDR-0009: Duplicate Build triggers left canceled checks on the PR
+
+- Status: `resolved`
+- Severity: `low`
+- Area: GitHub Actions build workflow
+- Identified: 2026-10-03 while reviewing PR #56 checks
+- Evidence: A push to `qt_6_12_migration` and the corresponding pull request
+  started Build runs for the same commit. The later pull request run canceled
+  the push run under their shared concurrency group. GitHub displayed its four
+  canceled jobs as failed checks alongside four passing pull request jobs.
+- Impact: PR #56 appeared to have failing CI despite all current Build and
+  CodeQL jobs passing.
+- Resolution: 2026-10-03. Build runs on pull requests and pushes to `main` or
+  `ci-*` tags; the temporary migration branch no longer starts a duplicate
+  push run.
+- Related: `.github/workflows/build.yml`, PR #56
+
 ### SDR-0008: Bundle audit rejected unused in-bundle rpaths
 
 - Status: `resolved`
