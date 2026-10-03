@@ -138,8 +138,8 @@ version-matched Qt GUI private headers. Select it for a build by setting
 `CMAKE_PREFIX_PATH` to the installed kit; `make qt-prefix` prints that path.
 This keeps the Qt installation selected for CMake under the developer's
 control. An older system Qt will be rejected at configure time. The setup
-target is optional when a suitable Qt 6.12 or newer installation is already
-available.
+target requires Python 3.9 or newer and is optional when a suitable Qt 6.12 or
+newer installation is already available.
 
 ### Linux
 
