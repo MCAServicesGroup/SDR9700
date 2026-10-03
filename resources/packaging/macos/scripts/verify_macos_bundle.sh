@@ -15,6 +15,7 @@ if [ ! -x "${contents_path}/MacOS/SDR9700" ]; then
     echo "SDR9700 application bundle not found at ${app_path}" >&2
     exit 1
 fi
+bundle_root="$(cd "${app_path}" && pwd -P)"
 
 if [ "$(plutil -extract CFBundleDisplayName raw -o - "${contents_path}/Info.plist")" != "SDR9700" ]; then
     echo "Unexpected CFBundleDisplayName; expected SDR9700" >&2
@@ -23,6 +24,56 @@ fi
 
 errors_file="$(mktemp /tmp/sdr9700-bundle-errors.XXXXXX)"
 trap 'rm -f "${errors_file}"' EXIT HUP INT TERM
+
+check_bundled_path()
+{
+    candidate="${1}"
+    source_path="${2}"
+    description="${3}"
+    require_existing="${4:-yes}"
+    if [ "${require_existing}" = yes ] && [ ! -e "${candidate}" ]; then
+        echo "${source_path}: missing ${description}" >>"${errors_file}"
+        return
+    fi
+    resolved_path="$(python3 -c 'import os, sys; print(os.path.realpath(sys.argv[1]))' "${candidate}")" || {
+        echo "${source_path}: cannot resolve ${description}" >>"${errors_file}"
+        return
+    }
+    case "${resolved_path}" in
+    "${bundle_root}" | "${bundle_root}"/*) ;;
+    *) echo "${source_path}: ${description} escapes the application bundle" >>"${errors_file}" ;;
+    esac
+}
+
+expected_qt_version="$(sed -n 's/^QT_VERSION=//p' _developer/qt/qt_pin.env)"
+qtcore_info="${frameworks_path}/QtCore.framework/Resources/Info.plist"
+if [ -z "${expected_qt_version}" ] || [ ! -f "${qtcore_info}" ]; then
+    echo "Missing Qt version pin or bundled QtCore framework metadata" >>"${errors_file}"
+else
+    bundled_qt_version="$(plutil -extract CFBundleVersion raw -o - "${qtcore_info}")" || {
+        echo "Cannot read bundled QtCore CFBundleVersion" >>"${errors_file}"
+        bundled_qt_version=""
+    }
+    if [ "${bundled_qt_version}" != "${expected_qt_version}" ]; then
+        echo "Bundled QtCore version ${bundled_qt_version} does not match pinned Qt ${expected_qt_version}" >>"${errors_file}"
+    fi
+    bundled_qt_short_version="$(plutil -extract CFBundleShortVersionString raw -o - "${qtcore_info}")" || {
+        echo "Cannot read bundled QtCore CFBundleShortVersionString" >>"${errors_file}"
+        bundled_qt_short_version=""
+    }
+    if [ "${bundled_qt_short_version}" != "${expected_qt_version%.*}" ]; then
+        echo "Bundled QtCore short version ${bundled_qt_short_version} does not match pinned Qt ${expected_qt_version%.*}" >>"${errors_file}"
+    fi
+fi
+
+expected_macos_version="$(sed -n 's/^SDR9700_MACOS_RELEASE_MIN_VERSION=//p' resources/packaging/macos/release_pin.env)"
+bundle_macos_version="$(plutil -extract LSMinimumSystemVersion raw -o - "${contents_path}/Info.plist")" || {
+    echo "Cannot read the application minimum macOS version" >>"${errors_file}"
+    bundle_macos_version=""
+}
+if [ -z "${expected_macos_version}" ] || [ "${bundle_macos_version}" != "${expected_macos_version}" ]; then
+    echo "Application minimum macOS version ${bundle_macos_version} does not match release floor ${expected_macos_version}" >>"${errors_file}"
+fi
 
 for required_plugin in \
     "${contents_path}/PlugIns/platforms/libqcocoa.dylib" \
@@ -37,6 +88,13 @@ done
 if [ ! -d "${frameworks_path}/QtSvg.framework" ]; then
     echo "Missing required Qt framework: ${frameworks_path}/QtSvg.framework" >>"${errors_file}"
 fi
+
+while IFS= read -r symlink_path; do
+    [ -n "${symlink_path}" ] || continue
+    check_bundled_path "${symlink_path}" "${symlink_path}" "symlink target"
+done <<EOF
+$(find "${contents_path}" -type l)
+EOF
 
 while IFS= read -r binary_path; do
     file_description="$(file "${binary_path}")" || {
@@ -55,25 +113,38 @@ while IFS= read -r binary_path; do
         echo "${binary_path}: expected arm64-only binary, found ${architectures}" >>"${errors_file}"
     fi
 
+    minimum_macos="$(vtool -show-build "${binary_path}" 2>/dev/null | awk '$1 == "minos" { print $2; exit }')" || true
+    if [ -z "${minimum_macos}" ]; then
+        echo "${binary_path}: cannot read minimum macOS version" >>"${errors_file}"
+    elif ! awk -v actual="${minimum_macos}" -v allowed="${expected_macos_version}" 'BEGIN {
+        split(actual, a, "."); split(allowed, b, ".")
+        for (i = 1; i <= 3; i++) {
+            if (a[i] + 0 > b[i] + 0) exit 1
+            if (a[i] + 0 < b[i] + 0) exit 0
+        }
+    }'; then
+        echo "${binary_path}: requires macOS ${minimum_macos}, above bundle minimum ${expected_macos_version}" >>"${errors_file}"
+    fi
+
     linked_libraries="$(otool -L "${binary_path}")" || {
         echo "${binary_path}: dependency inspection failed" >>"${errors_file}"
         continue
     }
     printf '%s\n' "${linked_libraries}" | awk 'NR > 1 { print $1 }' | while IFS= read -r dependency; do
         case "${dependency}" in
-        /System/Library/* | /usr/lib/* | @loader_path/*)
+        /System/Library/* | /usr/lib/*)
+            ;;
+        @loader_path/*)
+            relative_path="${dependency#@loader_path/}"
+            check_bundled_path "$(dirname "${binary_path}")/${relative_path}" "${binary_path}" "${dependency}"
             ;;
         @executable_path/../Frameworks/*)
             relative_path="${dependency#@executable_path/../Frameworks/}"
-            if [ ! -e "${frameworks_path}/${relative_path}" ]; then
-                echo "${binary_path}: missing ${dependency}" >>"${errors_file}"
-            fi
+            check_bundled_path "${frameworks_path}/${relative_path}" "${binary_path}" "${dependency}"
             ;;
         @rpath/*)
             relative_path="${dependency#@rpath/}"
-            if [ ! -e "${frameworks_path}/${relative_path}" ]; then
-                echo "${binary_path}: missing ${dependency}" >>"${errors_file}"
-            fi
+            check_bundled_path "${frameworks_path}/${relative_path}" "${binary_path}" "${dependency}"
             ;;
         /*)
             echo "${binary_path}: external dependency ${dependency}" >>"${errors_file}"
@@ -107,7 +178,11 @@ while IFS= read -r binary_path; do
         }
     ' | while IFS= read -r rpath; do
         case "${rpath}" in
-        @loader_path/* | @executable_path/*)
+        @loader_path/*)
+            check_bundled_path "$(dirname "${binary_path}")/${rpath#@loader_path/}" "${binary_path}" "rpath ${rpath}" no
+            ;;
+        @executable_path/*)
+            check_bundled_path "${contents_path}/MacOS/${rpath#@executable_path/}" "${binary_path}" "rpath ${rpath}" no
             ;;
         *)
             echo "${binary_path}: external rpath ${rpath}" >>"${errors_file}"

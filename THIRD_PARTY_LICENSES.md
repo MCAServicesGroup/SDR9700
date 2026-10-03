@@ -88,6 +88,18 @@ documentation, and prior open-source Icom LAN client work.
 
 ## Build-Time/System Dependencies
 
+### Qt SDK Setup Script
+
+`_developer/scripts/setup_qt.sh` adapts the Qt SDK download and cache workflow
+from the AetherSDR project's `scripts/setup/setup-qt.sh` at commit
+`25da98def649a3fc4198fe4b2db57bab610bbdf3`. The adaptation removes
+unrelated dependencies and uses SDR9700's module set and cache paths.
+
+- Source: <https://github.com/AetherSDR/AetherSDR/blob/25da98def649a3fc4198fe4b2db57bab610bbdf3/scripts/setup/setup-qt.sh>
+- License: GPL-3.0, compatible with SDR9700's GPL-3.0 license
+
+### System Libraries
+
 The application links against system-provided libraries when available. These
 are not vendored in this repository.
 

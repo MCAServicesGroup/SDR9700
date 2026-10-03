@@ -1,4 +1,17 @@
 cmake_minimum_required(VERSION 3.25)
+if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Darwin")
+    file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/resources/packaging/macos/release_pin.env"
+        SDR9700_MACOS_RELEASE_MIN_VERSION_LINE REGEX "^SDR9700_MACOS_RELEASE_MIN_VERSION=[0-9]+\\.[0-9]+$")
+    if(NOT SDR9700_MACOS_RELEASE_MIN_VERSION_LINE)
+        message(FATAL_ERROR "The macOS release package must define SDR9700_MACOS_RELEASE_MIN_VERSION.")
+    endif()
+    string(REGEX REPLACE "^SDR9700_MACOS_RELEASE_MIN_VERSION=" "" SDR9700_MACOS_RELEASE_MIN_VERSION
+        "${SDR9700_MACOS_RELEASE_MIN_VERSION_LINE}")
+    if(NOT DEFINED CMAKE_OSX_DEPLOYMENT_TARGET OR CMAKE_OSX_DEPLOYMENT_TARGET STREQUAL "")
+        set(CMAKE_OSX_DEPLOYMENT_TARGET "${SDR9700_MACOS_RELEASE_MIN_VERSION}" CACHE STRING
+            "Default minimum macOS version for the official release package")
+    endif()
+endif()
 project(SDR9700 VERSION 26.9.4 LANGUAGES C CXX)
 
 include(CTest)
@@ -62,7 +75,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     set(SDR9700_DEBUG_BUILD 1)
 endif()
 
-find_package(Qt6 6.2 REQUIRED COMPONENTS
+find_package(Qt6 6.12 REQUIRED COMPONENTS
     Core
     Widgets
     Network
@@ -72,17 +85,13 @@ find_package(Qt6 6.2 REQUIRED COMPONENTS
     Svg
 )
 if(BUILD_TESTING)
-    find_package(Qt6 6.2 REQUIRED COMPONENTS Test)
+    find_package(Qt6 6.12 REQUIRED COMPONENTS Test)
 endif()
 
 if(SDR9700_ENABLE_GPU_PANADAPTER)
-    if(Qt6_VERSION VERSION_LESS 6.7)
-        message(FATAL_ERROR "The GPU panadapter requires Qt 6.7 or newer (found Qt ${Qt6_VERSION}).")
-    endif()
-
     find_package(Qt6 REQUIRED COMPONENTS ShaderTools)
     if(NOT SDR9700_QT_PRIVATE_INCLUDE_ROOT)
-        find_package(Qt6GuiPrivate QUIET)
+        find_package(Qt6GuiPrivate ${Qt6_VERSION} EXACT QUIET)
     endif()
 
     set(SDR9700_QT_GUI_PRIVATE_TARGET_USABLE OFF)

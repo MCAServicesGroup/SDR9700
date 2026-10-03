@@ -1,4 +1,4 @@
-.PHONY: all workspace prepare-build release debug clean check check-format check-cppcheck run bundle verify-bundle sign dmg release-dmg notarize install
+.PHONY: all help workspace prepare-build qt-setup qt-prefix release debug clean check check-format check-cppcheck run bundle verify-bundle sign dmg release-dmg notarize install
 
 WORKSPACE_DIR := _workspace
 PRIVATE_DIR := $(WORKSPACE_DIR)/private
@@ -12,10 +12,27 @@ BUILD_JOBS := $(shell \
 
 all: release
 
+help:
+	@printf '%s\n' \
+	    'SDR9700 developer targets:' \
+	    '  make qt-setup   Download and install the pinned Qt SDK for source builds' \
+	    '  make qt-prefix  Print the installed Qt SDK CMake prefix' \
+	    '  make release    Clean and build a Release configuration' \
+	    '  make debug      Clean and build a Debug configuration' \
+	    '  make check      Run formatting and static analysis checks' \
+	    '  make run        Launch the build in _workspace/build' \
+	    '  make install    Install Linux desktop integration and the RC-28 udev rule'
+
 workspace:
 	mkdir -p $(WORKSPACE_DIR) $(PRIVATE_DIR)
 	chmod 0755 $(WORKSPACE_DIR)
 	chmod 0700 $(PRIVATE_DIR)
+
+qt-setup:
+	bash _developer/scripts/setup_qt.sh
+
+qt-prefix:
+	@bash _developer/scripts/setup_qt.sh --print-prefix
 
 prepare-build:
 	mkdir -p $(WORKSPACE_DIR)

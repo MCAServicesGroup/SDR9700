@@ -4,6 +4,12 @@ Every GitHub release must include substantive, maintainer-readable release
 notes. GitHub-generated notes may be used as source material, but a changelog
 link by itself is not an acceptable release description.
 
+Before running the macOS release workflow, configure the `macos_release`
+environment with a `main` branch restriction, required maintainer review, and
+environment-scoped Apple signing and notarization secrets. Remove any
+repository-scoped copies of those secrets. See the [macOS packaging guide](../resources/packaging/macos/README.md)
+for the required names and setup details.
+
 ## Version naming
 
 SDR9700 versions use `YY.M.R`, where `YY` is the final two digits of the
@@ -27,11 +33,13 @@ adds that prefix when it builds the title bar, which must read
 
 Git tags always add a leading `v`. A beta release therefore uses a tag such
 as `v26.9.1-beta.1`, the title `SDR9700 v26.9.1-beta.1`, and must be marked as a
-GitHub prerelease. Create it with:
+GitHub prerelease. Sign release tags and verify their signatures before
+creating a draft:
 
 ```bash
-gh release create v26.9.1-beta.1 --target main --prerelease \
-  --title "SDR9700 v26.9.1-beta.1" --notes-file <file>
+git tag -s v26.9.1-beta.1 -m "SDR9700 v26.9.1-beta.1"
+git verify-tag v26.9.1-beta.1
+git push origin v26.9.1-beta.1
 ```
 
 ## Release checklist
@@ -45,12 +53,25 @@ gh release create v26.9.1-beta.1 --target main --prerelease \
    and fixes since the previous release. End with the full changelog comparison
    link. Generated notes may be edited into the authored notes, but must not be
    published without maintainer review.
-5. Commit and push the version change.
-6. Publish the release as `SDR9700 v<version>` with tag `v<version>`, target the
-   verified `main` commit, and supply the authored notes with
-   `gh release create --notes-file <file>`. Add `--prerelease` for beta builds.
-7. Read the published release back with `gh release view` and verify that it is
-   not a draft, its stable/prerelease state is correct, its title and tag match
-   the display version, and its body contains the reviewed notes.
-8. Confirm that the macOS release workflow started and will attach the signed,
-   notarized Apple Silicon DMG to the release.
+5. Commit and push the version change to `main`. Create and push a signed
+   `v<version>` tag at that exact commit, then verify the tag signature and
+   that its commit matches `main`.
+6. Create a **draft** GitHub release for that existing tag with the title
+   `SDR9700 v<version>`, the authored notes, and the correct stable/prerelease
+   setting. Do not publish the draft yet. For example:
+
+   ```bash
+   gh release create v26.9.1-beta.1 --draft --prerelease \
+     --title "SDR9700 v26.9.1-beta.1" --notes-file <file>
+   ```
+
+7. From the repository's `main` branch, manually dispatch the **Release macOS
+   DMG** workflow for that existing tag. The workflow packages the signed tag
+   and attaches the Apple Silicon DMG only after build, tests, bundle checks,
+   signing, and notarization succeed. Linux release packages are not part of
+   the current release plan; Linux users build from source.
+8. Read the draft release back with `gh release view` and verify its draft
+   state, stable/prerelease state, title, tag, authored notes, and attached
+   DMG. Review the packaged DMG before publishing the draft.
+9. Publish the draft only after those checks pass, then confirm the published
+   release page and DMG are available.

@@ -42,9 +42,144 @@ outside the immediate task.
 
 ## Open Issues
 
-No open issues are currently recorded.
+### SDR-0006: Apple release secrets remain at repository scope
+
+- Status: `deferred`
+- Severity: `high`
+- Area: GitHub Actions release credentials
+- Identified: 2026-10-03 while configuring the `macos_release` environment
+- Evidence: The environment has a `main`-only branch policy and required
+  maintainer review, but no environment secrets. The five Apple signing and
+  notarization secret names remain configured at repository scope.
+- Impact: Other workflows can still access the repository-scoped credentials,
+  so the release environment does not yet isolate them.
+- Next action: When the maintainer is ready to move the secrets, re-enter the
+  five Apple secrets in `macos_release` from the originals, verify their names,
+  then delete the repository-scoped copies. The maintainer requested on
+  2026-10-03 that repository-scoped copies remain for now.
+- Related: `resources/packaging/macos/README.md`, `.github/workflows/release_macos.yml`
 
 ## Resolved Issues
+
+### SDR-0009: Duplicate Build triggers left canceled checks on the PR
+
+- Status: `resolved`
+- Severity: `low`
+- Area: GitHub Actions build workflow
+- Identified: 2026-10-03 while reviewing PR #56 checks
+- Evidence: A push to `qt_6_12_migration` and the corresponding pull request
+  started Build runs for the same commit. The later pull request run canceled
+  the push run under their shared concurrency group. GitHub displayed its four
+  canceled jobs as failed checks alongside four passing pull request jobs.
+- Impact: PR #56 appeared to have failing CI despite all current Build and
+  CodeQL jobs passing.
+- Resolution: 2026-10-03. Build runs on pull requests and pushes to `main` or
+  `ci-*` tags; the temporary migration branch no longer starts a duplicate
+  push run.
+- Related: `.github/workflows/build.yml`, PR #56
+
+### SDR-0008: Bundle audit rejected unused in-bundle rpaths
+
+- Status: `resolved`
+- Severity: `medium`
+- Area: macOS bundle verification
+- Identified: 2026-10-03 in Apple Silicon CI run `37157912537`
+- Evidence: Qt plugins carried `@loader_path/../../lib` rpaths whose directories
+  were absent from the staged bundle. All linked dependencies resolved through
+  other bundled paths, but `verify_macos_bundle.sh` failed on the absent rpath
+  directories.
+- Impact: A self-contained bundle could fail packaging even though the unused
+  rpaths did not prevent loading.
+- Resolution: 2026-10-03. The audit allows absent rpath directories only when
+  their canonical paths remain inside the bundle; linked dependency targets
+  must still exist inside it.
+- Related: `resources/packaging/macos/scripts/verify_macos_bundle.sh`
+
+### SDR-0007: Bundled libraries required macOS 15 above the declared floor
+
+- Status: `resolved`
+- Severity: `high`
+- Area: Apple Silicon macOS packaging
+- Identified: 2026-10-03 in Apple Silicon CI run `37157912537`
+- Evidence: The bundle declared macOS 14.4, but Homebrew builds of OpenSSL,
+  HIDAPI, SpeexDSP, and Opus bundled by the macos-15 job have Mach-O minimum
+  version 15.0. The bundle audit caught the mismatch.
+- Impact: The DMG could be advertised for Macs on which bundled libraries
+  cannot load.
+- Resolution: 2026-10-03. With the maintainer's decision, the official DMG
+  minimum is 15.0. CMake, Info.plist, documentation, and the bundle audit use
+  the release floor separately from Qt's own 14.4 minimum.
+- Related: `resources/packaging/macos/release_pin.env`, `CMakeLists.txt`,
+  `resources/packaging/macos/scripts/verify_macos_bundle.sh`
+
+### SDR-0005: macOS bundle did not verify its Qt version
+
+- Status: `resolved`
+- Severity: `medium`
+- Area: macOS application bundling
+- Identified: 2026-10-03 during Qt 6.12 migration review
+- Evidence: `deploy_macos.sh` selects `macdeployqt` from `PATH` and does not
+  verify that it belongs to the Qt installation used to build the application.
+  The bundle audit checks load paths and missing dependencies but does not
+  verify the bundled Qt version.
+- Impact: A mismatched deployment tool can produce a bundle with inconsistent
+  Qt libraries or plugins despite a successful build.
+- Related: `resources/packaging/macos/scripts/deploy_macos.sh`,
+  `resources/packaging/macos/scripts/verify_macos_bundle.sh`
+
+- Resolution: 2026-10-03. The bundle audit now checks the bundled QtCore
+  version against the repository pin, verifies required bundle dependencies
+  remain inside the application bundle, and checks the macOS deployment floor.
+
+### SDR-0004: Release packaging starts after publication
+
+- Status: `resolved`
+- Severity: `medium`
+- Area: macOS release workflow
+- Identified: 2026-10-03 during Qt 6.12 migration review
+- Evidence: The workflow used the `release.published` event, so the release
+  could become public before the signed and notarized DMG was available.
+- Impact: Packaging, signing, or notarization failure could leave a public
+  release without its promised macOS installer.
+- Related: `.github/workflows/release_macos.yml`, `_developer/RELEASING.md`
+
+- Resolution: 2026-10-03. Packaging now runs only by manual dispatch,
+  requires an existing draft release, and rechecks draft status before
+  attaching the DMG. The maintainer publishes the release after reviewing
+  the draft.
+
+### SDR-0003: Release workflow accepts an unverified dispatch ref
+
+- Status: `resolved`
+- Severity: `medium`
+- Area: macOS release workflow
+- Identified: 2026-10-03 during Qt 6.12 migration review
+- Evidence: The workflow dispatch input selected a checkout ref independently
+  of the target GitHub Release; version matching alone did not verify that the
+  ref was the signed release tag or that its commit matched the release source.
+- Impact: A manually dispatched run could package source other than the
+  reviewed, signed release commit.
+- Related: `.github/workflows/release_macos.yml`
+
+- Resolution: 2026-10-03. The workflow runs only from `main`, verifies the
+  requested signed tag, requires it to point at the dispatch commit, and checks
+  that its version matches the source.
+
+### SDR-0002: Qt version is duplicated between the local pin and CI
+
+- Status: `resolved`
+- Severity: `low`
+- Area: Qt setup and GitHub Actions workflows
+- Identified: 2026-10-03 during Qt 6.12 migration documentation
+- Evidence: `_developer/qt/qt_pin.env` defines the local SDK version, while
+  `.github/workflows/build.yml`, `nightly.yml`, and `release_macos.yml` each
+  define their own `QT_VERSION` value.
+- Impact: Updating only one value can make local builds and CI or release builds
+  use different Qt versions.
+- Related: `_developer/qt/qt_pin.env`, `.github/workflows/`
+
+- Resolution: 2026-10-03. CI and release workflows now call the shared Qt
+  setup script, which reads the repository pin.
 
 ### SDR-0001: Intermittent ThreadSanitizer race in CachingQueueTest
 

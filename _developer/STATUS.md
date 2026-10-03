@@ -11,14 +11,45 @@ current source version is `26.9.4`.
   and stapled `SDR9700-26.9.4-macOS-apple-silicon.dmg` before attaching it to
   the GitHub release.
 - The GitHub repository is public, as required by the repository policy.
+- Linux release packages are not planned at this time. Linux users who want to
+  use SDR9700 must build it from source.
 
 ## Current Work
 
+- The `qt_6_12_migration` branch raises the minimum supported Qt version to
+  6.12.0 and provides a local Qt SDK setup target. Linux and Apple Silicon CI
+  builds, tests, Metal rendering, and the unsigned macOS bundle audit pass.
+  Signed DMG/notarization and radio/audio hardware validation remain.
+- macOS releases now use a draft-first process: dispatch the release workflow
+  from `main` for an existing signed version tag, then publish the draft only
+  after the packaged DMG and release notes are reviewed.
+- The `macos_release` GitHub environment has a `main`-only deployment policy
+  and required maintainer review. The Apple secrets remain at repository scope
+  at the maintainer's request; their move into the environment is deferred.
 - Keep the normal Linux and Apple Silicon macOS build and test workflows green.
 - Preserve hardware-independent automated coverage; radio-dependent behavior
   still requires explicit IC-9700 validation.
 
-## Validation State
+## Qt 6.12 Migration Validation
+
+- The local setup script installed the pinned prebuilt Qt 6.12.0 SDK and
+  verified package revision `202609280346`, required modules, and its cached
+  no-op path. The same revision appears in the macOS package metadata.
+- A clean Linux Release build and all 37 tests pass against Qt 6.12.0.
+- A clean Linux GPU-panadapter build and all 40 tests pass against Qt 6.12.0,
+  using a temporary X server and software Vulkan for the three GPU tests.
+- The clang-format 23 and cppcheck 2.21.0 source checks pass.
+- GitHub Build run `37158990926` passes the Linux, Linux without HIDAPI,
+  Linux GPU panadapter, and Apple Silicon jobs. The Apple Silicon job passes
+  Metal rendering tests, the full test suite, and the self-contained bundle
+  audit with the official macOS 15.0 floor.
+- A signed, notarized Qt 6.12 DMG and radio/audio hardware behavior have not
+  yet been validated on this branch.
+
+## Pre-Migration Validation State
+
+The results below describe the previous Qt build configuration. The
+local Qt 6.8.2 installation is rejected by the new CMake minimum.
 
 - The clean local Release build and all 37 tests pass.
 - The clean AddressSanitizer/UndefinedBehaviorSanitizer build and all 37 tests
