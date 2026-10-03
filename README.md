@@ -120,24 +120,44 @@ the application communicates with the radio and can send transmit audio.
 
 ### Linux
 
-Prebuilt Linux packages are not currently published. Follow the source-build
-instructions below.
+Linux release packages are not planned at this time. Anyone who wants to use
+SDR9700 on Linux must build it from source using the instructions below.
 
 ## Building from Source
 
-Building requires a C++ toolchain, CMake, Ninja, GNU Make, pkg-config, Qt 6,
-OpenSSL, Opus, SpeexDSP, Eigen, and optionally HIDAPI for RC-28 support.
+Building requires a C++ toolchain, CMake 3.25 or newer, Ninja, GNU Make,
+pkg-config, Qt 6.12 or newer, OpenSSL, Opus, SpeexDSP, Eigen, and optionally
+HIDAPI for RC-28 support.
 `make release` performs a clean Release build in `_workspace/build`. Only
 Release and Debug CMake configurations are supported.
 
+The Makefile provides `make qt-setup` to download the pinned, prebuilt Qt
+6.12.0 SDK into a per-user cache. This kit includes the required modules and
+version-matched Qt GUI private headers. Select it for a build by setting
+`CMAKE_PREFIX_PATH` to the installed kit; `make qt-prefix` prints that path.
+This keeps the Qt installation selected for CMake under the developer's
+control. An older system Qt will be rejected at configure time. The setup
+target is optional when a suitable Qt 6.12 or newer installation is already
+available.
+
 ### Linux
 
-On Debian, Ubuntu, and related distributions, install the build dependencies:
+On Debian, Ubuntu, and related distributions, install the non-Qt build
+dependencies:
 
 ```bash
-sudo apt install build-essential cmake ninja-build pkg-config \
-  qt6-base-dev qt6-multimedia-dev qt6-svg-dev libqt6sql6-sqlite libssl-dev libopus-dev \
-  libspeexdsp-dev libxkbcommon-dev libeigen3-dev libhidapi-dev
+sudo apt install build-essential cmake ninja-build pkg-config python3 python3-venv curl \
+  libssl-dev libopus-dev libgl1-mesa-dev libpulse0 \
+  libspeexdsp-dev libxkbcommon-dev libxkbcommon-x11-0 libeigen3-dev libhidapi-dev \
+  libxcb-cursor0 libxcb-icccm4 libxcb-keysyms1 libxcb-randr0 \
+  libxcb-shape0 libxcb-xfixes0 libxcb-xinerama0
+```
+
+Install the pinned Qt SDK and select it for the build:
+
+```bash
+make qt-setup
+export CMAKE_PREFIX_PATH="$(make qt-prefix)"
 ```
 
 After building, `make install` creates the desktop launcher and icons for the
@@ -172,21 +192,25 @@ Launch the built application with diagnostics enabled:
 
 ### macOS (Apple Silicon)
 
-Install the Xcode command-line tools if they are not already present:
-
-```bash
-xcode-select --install
-```
+Install Xcode 16 or newer and select it with `xcode-select`. The pinned Qt
+SDK requires macOS 14.4 or newer.
 
 Use Homebrew to install the build dependencies:
 
 ```bash
-brew install cmake ninja pkg-config qt openssl@3 opus speexdsp eigen hidapi
+brew install cmake ninja pkg-config python openssl@3 opus speexdsp eigen hidapi
 ```
 
 Homebrew is needed only by developers building from source. It is not an
 end-user runtime requirement. Apple Silicon builds use Qt RHI's Metal backend
 for the spectrum and waterfall display.
+
+Install the pinned Qt SDK and select it for the build:
+
+```bash
+make qt-setup
+export CMAKE_PREFIX_PATH="$(make qt-prefix)"
+```
 
 Build and run the application:
 

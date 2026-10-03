@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - qt_6_12_migration
     tags:
       - 'ci-*'
   pull_request:
@@ -20,15 +21,14 @@ defaults:
   run:
     shell: bash --noprofile --norc -eo pipefail {0}
 
-env:
-  QT_VERSION: 6.8.3
-
 jobs:
   linux:
     name: Linux
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Test CI Qt setup
+        run: bash _developer/scripts/tests/setup_ci_qt_test.sh
       - name: Configure LLVM 23 package repository
         run: |
           sudo apt-get update
@@ -43,10 +43,13 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install --no-install-recommends \
-            build-essential cmake ninja-build pkg-config \
+            build-essential cmake ninja-build pkg-config python3-venv curl \
             clang-format-23 \
-            qt6-base-dev qt6-multimedia-dev qt6-svg-dev libqt6sql6-sqlite libssl-dev libopus-dev \
-            libspeexdsp-dev libxkbcommon-dev libeigen3-dev libhidapi-dev
+            libssl-dev libopus-dev libgl1-mesa-dev libpulse0 \
+            libspeexdsp-dev libxkbcommon-dev libxkbcommon-x11-0 libeigen3-dev libhidapi-dev \
+            libxcb-cursor0 libxcb-icccm4 libxcb-keysyms1 libxcb-randr0 \
+            libxcb-shape0 libxcb-xfixes0 libxcb-xinerama0
+          bash _developer/scripts/setup_ci_qt.sh
           clang-format-23 --version | grep -E 'clang-format version 23\.'
           cmake --version
       - name: Build cppcheck 2.21.0
@@ -77,17 +80,8 @@ jobs:
         run: test "$(uname -m)" = "arm64"
       - name: Install dependencies
         run: |
-          brew install cmake ninja pkg-config openssl@3 opus speexdsp eigen hidapi
-          python3 -m venv "$RUNNER_TEMP/aqt-venv"
-          "$RUNNER_TEMP/aqt-venv/bin/pip" install --disable-pip-version-check aqtinstall==3.3.0
-          "$RUNNER_TEMP/aqt-venv/bin/aqt" install-qt mac desktop "$QT_VERSION" clang_64 \
-            --outputdir "$RUNNER_TEMP/Qt" \
-            -m qtmultimedia qtshadertools
-          qt_root="$RUNNER_TEMP/Qt/$QT_VERSION/macos"
-          test -x "$qt_root/bin/qmake"
-          echo "$qt_root/bin" >> "$GITHUB_PATH"
-          echo "CMAKE_PREFIX_PATH=$qt_root" >> "$GITHUB_ENV"
-          "$qt_root/bin/qmake" -query QT_VERSION
+          brew install cmake ninja pkg-config python openssl@3 opus speexdsp eigen hidapi
+          bash _developer/scripts/setup_ci_qt.sh
       - name: Build
         run: make release
       - name: Verify Metal panadapter build
@@ -95,10 +89,14 @@ jobs:
           grep -Fq 'SDR9700_ENABLE_GPU_PANADAPTER:BOOL=ON' _workspace/build/CMakeCache.txt
           nm _workspace/build/bin/SDR9700.app/Contents/MacOS/SDR9700 \
             | grep -F 'qInitResources_SDR9700_panadapter_shaders' >/dev/null
+      - name: Test Metal panadapter rendering
+        run: ctest --test-dir _workspace/build --output-on-failure --no-tests=error -L gpu
       - name: Test
         run: ctest --test-dir _workspace/build --output-on-failure
       - name: Verify self-contained application bundle
-        run: make bundle
+        run: |
+          make bundle
+          make verify-bundle
 
   linux-no-hidapi:
     name: Linux without HIDAPI
@@ -109,9 +107,12 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install --no-install-recommends \
-            build-essential cmake ninja-build pkg-config \
-            qt6-base-dev qt6-multimedia-dev qt6-svg-dev libqt6sql6-sqlite libssl-dev libopus-dev \
-            libspeexdsp-dev libxkbcommon-dev libeigen3-dev
+            build-essential cmake ninja-build pkg-config python3-venv curl \
+            libssl-dev libopus-dev libgl1-mesa-dev libpulse0 \
+            libspeexdsp-dev libxkbcommon-dev libxkbcommon-x11-0 libeigen3-dev \
+            libxcb-cursor0 libxcb-icccm4 libxcb-keysyms1 libxcb-randr0 \
+            libxcb-shape0 libxcb-xfixes0 libxcb-xinerama0
+          bash _developer/scripts/setup_ci_qt.sh
       - name: Build without HIDAPI
         run: |
           cmake -S . -B _workspace/build -G Ninja -DCMAKE_BUILD_TYPE=Release -DSDR9700_ENABLE_HIDAPI=OFF
@@ -129,7 +130,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install --no-install-recommends \
-            build-essential cmake ninja-build pkg-config python3-venv xauth xvfb \
+            build-essential cmake ninja-build pkg-config python3-venv curl xauth xvfb \
             libssl-dev libopus-dev libspeexdsp-dev libeigen3-dev libgl1-mesa-dev libpulse0 libvulkan-dev \
             mesa-vulkan-drivers \
             libxkbcommon-dev libxkbcommon-x11-0 \
@@ -137,16 +138,7 @@ jobs:
             libxcb-shape0 libxcb-xfixes0 libxcb-xinerama0
       - name: Install Qt
         run: |
-          python3 -m venv "$RUNNER_TEMP/aqt-venv"
-          "$RUNNER_TEMP/aqt-venv/bin/pip" install --disable-pip-version-check aqtinstall==3.3.0
-          "$RUNNER_TEMP/aqt-venv/bin/aqt" install-qt linux desktop "$QT_VERSION" linux_gcc_64 \
-            --outputdir "$RUNNER_TEMP/Qt" \
-            -m qtmultimedia qtshadertools
-          qt_root="$RUNNER_TEMP/Qt/$QT_VERSION/gcc_64"
-          test -x "$qt_root/bin/qmake"
-          echo "$qt_root/bin" >> "$GITHUB_PATH"
-          echo "CMAKE_PREFIX_PATH=$qt_root" >> "$GITHUB_ENV"
-          "$qt_root/bin/qmake" -query QT_VERSION
+          bash _developer/scripts/setup_ci_qt.sh
       - name: Build GPU panadapter
         run: |
           cmake -S . -B _workspace/build -G Ninja -DCMAKE_BUILD_TYPE=Release -DSDR9700_ENABLE_GPU_PANADAPTER=ON

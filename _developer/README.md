@@ -17,6 +17,11 @@ shared maintenance utilities.
 
 ## Workflows
 
+- [Qt SDK setup](scripts/setup_qt.sh) downloads the pinned Qt 6.12.0 SDK for
+  source builds. Run it through `make qt-setup`; `make qt-prefix` prints the
+  CMake prefix. [Qt pin](qt/qt_pin.env) records its version and supported host
+  floors. Linux users build from source; Linux release packages are not
+  planned at this time.
 - [Debugging](DEBUGGING.md) documents debug builds, runtime logging categories,
   and log-file capture.
 - [Releasing](RELEASING.md) defines version naming, release notes, verification,

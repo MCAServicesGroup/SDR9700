@@ -40,9 +40,12 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install --no-install-recommends \
-            build-essential cmake ninja-build pkg-config \
-            qt6-base-dev qt6-multimedia-dev qt6-svg-dev libqt6sql6-sqlite libssl-dev libopus-dev \
-            libspeexdsp-dev libxkbcommon-dev libeigen3-dev libhidapi-dev
+            build-essential cmake ninja-build pkg-config python3-venv curl \
+            libssl-dev libopus-dev libgl1-mesa-dev libpulse0 \
+            libspeexdsp-dev libxkbcommon-dev libxkbcommon-x11-0 libeigen3-dev libhidapi-dev \
+            libxcb-cursor0 libxcb-icccm4 libxcb-keysyms1 libxcb-randr0 \
+            libxcb-shape0 libxcb-xfixes0 libxcb-xinerama0
+          bash _developer/scripts/setup_ci_qt.sh
       - name: Build
         run: |
           cmake -S . -B _workspace/build -G Ninja -DCMAKE_BUILD_TYPE=Debug \
@@ -64,9 +67,12 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install --no-install-recommends \
-            build-essential cmake ninja-build pkg-config \
-            qt6-base-dev qt6-multimedia-dev qt6-svg-dev libqt6sql6-sqlite libssl-dev libopus-dev \
-            libspeexdsp-dev libxkbcommon-dev libeigen3-dev libhidapi-dev
+            build-essential cmake ninja-build pkg-config python3-venv curl \
+            libssl-dev libopus-dev libgl1-mesa-dev libpulse0 \
+            libspeexdsp-dev libxkbcommon-dev libxkbcommon-x11-0 libeigen3-dev libhidapi-dev \
+            libxcb-cursor0 libxcb-icccm4 libxcb-keysyms1 libxcb-randr0 \
+            libxcb-shape0 libxcb-xfixes0 libxcb-xinerama0
+          bash _developer/scripts/setup_ci_qt.sh
       - name: Build benchmark suite
         run: |
           cmake -S . -B _workspace/build -G Ninja -DCMAKE_BUILD_TYPE=Release -DSDR9700_BUILD_BENCHMARKS=ON

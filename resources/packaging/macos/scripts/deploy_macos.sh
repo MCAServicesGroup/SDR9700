@@ -16,9 +16,41 @@ if [ ! -x "${contents_path}/MacOS/SDR9700" ]; then
     exit 1
 fi
 
-deployqt_path="$(command -v macdeployqt || true)"
-if [ -z "${deployqt_path}" ]; then
-    echo "macdeployqt is required on the build machine." >&2
+cache_path="$(dirname "$(dirname "${app_path}")")/CMakeCache.txt"
+if [ ! -f "${cache_path}" ]; then
+    echo "CMake cache not found for ${app_path}; rebuild before packaging." >&2
+    exit 1
+fi
+qt6_dir="$(sed -n 's/^Qt6_DIR:PATH=//p' "${cache_path}")"
+case "${qt6_dir}" in
+/*/lib/cmake/Qt6) ;;
+*)
+    echo "CMake cache does not identify an absolute Qt6_DIR." >&2
+    exit 1
+    ;;
+esac
+qt_root="$(cd "${qt6_dir}/../../.." && pwd -P)"
+deployqt_path="${qt_root}/bin/macdeployqt"
+qmake_path="${qt_root}/bin/qmake"
+
+# The same SDK that CMake selected must provide macdeployqt. The generation
+# stamp also proves the exact upstream Qt package revision, which a version
+# string alone cannot distinguish from a republished or Homebrew-built kit.
+pin_file="$(cd "$(dirname "$0")/../../../.." && pwd -P)/_developer/qt/qt_pin.env"
+# shellcheck source=../../../../_developer/qt/qt_pin.env
+. "${pin_file}"
+expected_stamp="version=${QT_VERSION} revision=${QT_PACKAGE_REVISION} arch=clang_64 modules=${QT_MODULES} aqt=${AQTINSTALL_VERSION}"
+sdk_stamp="${qt_root}/../../.sdr9700_qt_stamp"
+if [ ! -f "${sdk_stamp}" ] || [ "$(cat "${sdk_stamp}")" != "${expected_stamp}" ]; then
+    echo "The CMake-selected Qt SDK does not match the pinned Qt package revision; run make qt-setup and rebuild." >&2
+    exit 1
+fi
+if [ ! -x "${qmake_path}" ] || [ "$("${qmake_path}" -query QT_VERSION)" != "${QT_VERSION}" ]; then
+    echo "The CMake-selected Qt SDK does not provide Qt ${QT_VERSION}." >&2
+    exit 1
+fi
+if [ ! -x "${deployqt_path}" ]; then
+    echo "The CMake-selected Qt SDK does not provide macdeployqt." >&2
     exit 1
 fi
 
@@ -35,9 +67,9 @@ run_macdeployqt()
             -always-overwrite \
             -no-codesign
     else
-        # Qt 6.8's macdeployqt does not expose -no-codesign. Any signatures it
-        # creates are intentionally invalidated below and replaced only after
-        # the bundle's load commands have reached their final state.
+        # Older macdeployqt releases may lack -no-codesign. Any signatures they
+        # create are invalidated below and replaced after the bundle's load
+        # commands have reached their final state.
         "${deployqt_path}" "${app_path}" \
             -verbose=0 \
             -always-overwrite

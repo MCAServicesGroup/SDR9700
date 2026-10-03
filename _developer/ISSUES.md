@@ -42,9 +42,92 @@ outside the immediate task.
 
 ## Open Issues
 
-No open issues are currently recorded.
+### SDR-0006: Apple release secrets remain at repository scope
+
+- Status: `open`
+- Severity: `high`
+- Area: GitHub Actions release credentials
+- Identified: 2026-10-03 while configuring the `macos_release` environment
+- Evidence: The environment has a `main`-only branch policy and required
+  maintainer review, but no environment secrets. The five Apple signing and
+  notarization secret names remain configured at repository scope.
+- Impact: Other workflows can still access the repository-scoped credentials,
+  so the release environment does not yet isolate them.
+- Next action: Re-enter the five Apple secrets in `macos_release` from the
+  maintainer's originals, verify their names, then delete the repository-scoped
+  copies before using the new release workflow.
+- Related: `resources/packaging/macos/README.md`, `.github/workflows/release_macos.yml`
 
 ## Resolved Issues
+
+### SDR-0005: macOS bundle did not verify its Qt version
+
+- Status: `resolved`
+- Severity: `medium`
+- Area: macOS application bundling
+- Identified: 2026-10-03 during Qt 6.12 migration review
+- Evidence: `deploy_macos.sh` selects `macdeployqt` from `PATH` and does not
+  verify that it belongs to the Qt installation used to build the application.
+  The bundle audit checks load paths and missing dependencies but does not
+  verify the bundled Qt version.
+- Impact: A mismatched deployment tool can produce a bundle with inconsistent
+  Qt libraries or plugins despite a successful build.
+- Related: `resources/packaging/macos/scripts/deploy_macos.sh`,
+  `resources/packaging/macos/scripts/verify_macos_bundle.sh`
+
+- Resolution: 2026-10-03. The bundle audit now checks the bundled QtCore
+  version against the repository pin, verifies required bundle dependencies
+  remain inside the application bundle, and checks the macOS deployment floor.
+
+### SDR-0004: Release packaging starts after publication
+
+- Status: `resolved`
+- Severity: `medium`
+- Area: macOS release workflow
+- Identified: 2026-10-03 during Qt 6.12 migration review
+- Evidence: The workflow used the `release.published` event, so the release
+  could become public before the signed and notarized DMG was available.
+- Impact: Packaging, signing, or notarization failure could leave a public
+  release without its promised macOS installer.
+- Related: `.github/workflows/release_macos.yml`, `_developer/RELEASING.md`
+
+- Resolution: 2026-10-03. Packaging now runs only by manual dispatch,
+  requires an existing draft release, and rechecks draft status before
+  attaching the DMG. The maintainer publishes the release after reviewing
+  the draft.
+
+### SDR-0003: Release workflow accepts an unverified dispatch ref
+
+- Status: `resolved`
+- Severity: `medium`
+- Area: macOS release workflow
+- Identified: 2026-10-03 during Qt 6.12 migration review
+- Evidence: The workflow dispatch input selected a checkout ref independently
+  of the target GitHub Release; version matching alone did not verify that the
+  ref was the signed release tag or that its commit matched the release source.
+- Impact: A manually dispatched run could package source other than the
+  reviewed, signed release commit.
+- Related: `.github/workflows/release_macos.yml`
+
+- Resolution: 2026-10-03. The workflow runs only from `main`, verifies the
+  requested signed tag, requires it to point at the dispatch commit, and checks
+  that its version matches the source.
+
+### SDR-0002: Qt version is duplicated between the local pin and CI
+
+- Status: `resolved`
+- Severity: `low`
+- Area: Qt setup and GitHub Actions workflows
+- Identified: 2026-10-03 during Qt 6.12 migration documentation
+- Evidence: `_developer/qt/qt_pin.env` defines the local SDK version, while
+  `.github/workflows/build.yml`, `nightly.yml`, and `release_macos.yml` each
+  define their own `QT_VERSION` value.
+- Impact: Updating only one value can make local builds and CI or release builds
+  use different Qt versions.
+- Related: `_developer/qt/qt_pin.env`, `.github/workflows/`
+
+- Resolution: 2026-10-03. CI and release workflows now call the shared Qt
+  setup script, which reads the repository pin.
 
 ### SDR-0001: Intermittent ThreadSanitizer race in CachingQueueTest
 

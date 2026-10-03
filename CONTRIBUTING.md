@@ -23,6 +23,19 @@ radio-control path harder to understand or maintain.
 
 ## Development Workflow
 
+Qt 6.12 or newer is required. If you do not already have a suitable Qt
+installation, install the repository-pinned Qt 6.12.0 SDK and select it with:
+
+```bash
+make qt-setup
+export CMAKE_PREFIX_PATH="$(make qt-prefix)"
+```
+
+The setup target downloads the SDK into a per-user cache. It is separate from
+the build targets, so normal builds do not download Qt automatically. The
+explicit prefix selection leaves the Qt installation used by CMake under the
+developer's control.
+
 ```bash
 make release
 ./_workspace/build/bin/SDR9700

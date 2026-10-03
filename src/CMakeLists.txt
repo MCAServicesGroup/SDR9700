@@ -1,4 +1,4 @@
-find_package(Qt6 REQUIRED COMPONENTS Core Widgets Network Multimedia Sql Svg)
+find_package(Qt6 6.12 REQUIRED COMPONENTS Core Widgets Network Multimedia Sql Svg)
 find_package(OpenSSL REQUIRED COMPONENTS Crypto)
 find_package(PkgConfig REQUIRED)
 
