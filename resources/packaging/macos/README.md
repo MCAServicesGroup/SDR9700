@@ -10,13 +10,13 @@ It does not publish the Release. After the workflow succeeds and the asset and
 release notes have been reviewed, a maintainer publishes the draft.
 
 Configure the `macos_release` GitHub Actions environment with a deployment
-branch restriction allowing only `main` and a required maintainer review. Put
-the signing and notarization secrets below in that environment, and remove any
-repository-scoped copies so a workflow run from another branch cannot access
-them. The workflow's `main` guard and environment branch restriction must both
-remain in place. The pinned Qt setup checks the exact package revision, and
-the bundle audit checks its QtCore version, self-contained dependencies, and
-minimum macOS version before signing.
+branch restriction allowing only `main` and a required maintainer review. The
+signing and notarization secrets below currently remain at repository scope at
+the maintainer's request; the release workflow can use them there. Their move
+to environment scope is deferred. The workflow's `main` guard and environment
+branch restriction must both remain in place. The pinned Qt setup checks the
+exact package revision, and the bundle audit checks its QtCore version,
+self-contained dependencies, and minimum macOS version before signing.
 
 The official DMG requires macOS 15.0 or newer, recorded in
 `resources/packaging/macos/release_pin.env`. Qt 6.12 itself supports macOS
@@ -24,7 +24,7 @@ The official DMG requires macOS 15.0 or newer, recorded in
 The bundle audit compares the app's declared minimum with the release pin and
 rejects any bundled Mach-O binary that needs a newer system.
 
-Configure these GitHub Actions environment secrets before running the workflow:
+The release workflow requires these GitHub Actions secrets:
 
 - `APPLE_CERT_BASE64`: Base64-encoded PKCS#12 (`.p12`) export containing the
   Developer ID Application certificate and its private key.
