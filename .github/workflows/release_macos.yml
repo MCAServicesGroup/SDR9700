@@ -22,7 +22,7 @@ concurrency:
 jobs:
   package:
     name: Apple Silicon macOS
-    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.repository == 'MCAServicesGroup/sdr9700'
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.repository == 'MCAServicesGroup/SDR9700'
     runs-on: macos-15
     environment: macos_release
 

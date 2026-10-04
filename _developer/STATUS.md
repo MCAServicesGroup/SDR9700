@@ -10,16 +10,20 @@ current source version is `26.9.4`.
 - The Apple Silicon release workflow built, tested, audited, signed, notarized,
   and stapled `SDR9700-26.9.4-macOS-apple-silicon.dmg` before attaching it to
   the GitHub release.
-- The GitHub repository is public, as required by the repository policy.
+- The GitHub repository is public at
+  <https://github.com/MCAServicesGroup/SDR9700>, as required by the repository
+  policy.
 - Linux release packages are not planned at this time. Linux users who want to
   use SDR9700 must build it from source.
 
 ## Current Work
 
-- The `qt_6_12_migration` branch raises the minimum supported Qt version to
-  6.12.0 and provides a local Qt SDK setup target. Linux and Apple Silicon CI
-  builds, tests, Metal rendering, and the unsigned macOS bundle audit pass.
-  Signed DMG/notarization and radio/audio hardware validation remain.
+- PR #56 merged the Qt 6.12 minimum and local Qt SDK setup target. Linux and
+  Apple Silicon CI builds, tests, Metal rendering, and the unsigned macOS
+  bundle audit pass. Signed DMG/notarization and radio/audio hardware
+  validation remain.
+- PR #57 fixes Qt SDK setup for Python 3.9 on macOS; its Build and CodeQL
+  checks pass. The maintainer's local Qt download remains to be confirmed.
 - macOS releases now use a draft-first process: dispatch the release workflow
   from `main` for an existing signed version tag, then publish the draft only
   after the packaged DMG and release notes are reviewed.
@@ -44,7 +48,7 @@ current source version is `26.9.4`.
   Metal rendering tests, the full test suite, and the self-contained bundle
   audit with the official macOS 15.0 floor.
 - A signed, notarized Qt 6.12 DMG and radio/audio hardware behavior have not
-  yet been validated on this branch.
+  yet been validated after the migration.
 
 ## Pre-Migration Validation State
 

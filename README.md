@@ -21,7 +21,7 @@ Multimedia.
 
 ## Status
 
-[SDR9700 26.9.4](https://github.com/MCAServicesGroup/sdr9700/releases/tag/v26.9.4) is the
+[SDR9700 26.9.4](https://github.com/MCAServicesGroup/SDR9700/releases/tag/v26.9.4) is the
 current stable release. The project remains under active development and
 provides an IC-9700-focused LAN control surface on Linux and Apple Silicon
 macOS, backed by automated protocol, scheduler, routing, model, and GUI tests.
@@ -110,7 +110,7 @@ systems, and optional USB controllers is welcome.
 ### macOS (Apple Silicon)
 
 Download the `SDR9700-<version>-macOS-apple-silicon.dmg` from the
-[latest SDR9700 release](https://github.com/MCAServicesGroup/sdr9700/releases/latest), open
+[latest SDR9700 release](https://github.com/MCAServicesGroup/SDR9700/releases/latest), open
 it, and drag SDR9700 into Applications.
 
 The official DMG requires macOS 15.0 or newer. The release application includes

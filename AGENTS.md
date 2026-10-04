@@ -11,8 +11,8 @@ Consolidate all such instructions here.
 
 ## GitHub
 
-- Maintain the `sdr9700` repository in the **MCA Services Group**
-  organization: <https://github.com/MCAServicesGroup/sdr9700>.
+- Maintain the `SDR9700` repository in the **MCA Services Group**
+  organization: <https://github.com/MCAServicesGroup/SDR9700>.
 - Use the `jwpauler` GitHub account for this repository.
 - Author commits as `Justin Pauler <justin@pauler.org>`.
 - Sign every commit with the key whose fingerprint is

@@ -61,6 +61,20 @@ outside the immediate task.
 
 ## Resolved Issues
 
+### SDR-0011: About dialog linked to the previous repository owner
+
+- Status: `resolved`
+- Severity: `low`
+- Area: About dialog project link
+- Identified: 2026-10-03 during the GitHub repository rename
+- Evidence: `src/gui/AboutDialog.cpp` linked to `w5jwp/SDR9700` while the
+  project is maintained at `MCAServicesGroup/SDR9700`.
+- Impact: The application's project link relied on GitHub's old-location
+  redirect rather than pointing at the maintained repository directly.
+- Resolution: 2026-10-03. Point the dialog at the current organization URL and
+  update its test.
+- Related: `src/gui/AboutDialog.cpp`, `src/tests/AboutDialogTest.cpp`
+
 ### SDR-0009: Duplicate Build triggers left canceled checks on the PR
 
 - Status: `resolved`
