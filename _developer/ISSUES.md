@@ -73,7 +73,7 @@ outside the immediate task.
   redirect rather than pointing at the maintained repository directly.
 - Resolution: 2026-10-03. Point the dialog at the current organization URL and
   update its test.
-- Related: `src/gui/AboutDialog.cpp`, `src/tests/AboutDialogTest.cpp`
+- Related: `src/gui/AboutDialog.cpp`, `src/tests/AboutDialogTest.cpp`, PR #58
 
 ### SDR-0009: Duplicate Build triggers left canceled checks on the PR
 
