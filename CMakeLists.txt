@@ -12,11 +12,11 @@ if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Darwin")
             "Default minimum macOS version for the official release package")
     endif()
 endif()
-project(SDR9700 VERSION 26.9.4 LANGUAGES C CXX)
+project(SDR9700 VERSION 26.10.1 LANGUAGES C CXX)
 
 include(CTest)
 
-set(SDR9700_DISPLAY_VERSION "26.9.4")
+set(SDR9700_DISPLAY_VERSION "26.10.1")
 option(SDR9700_SANITIZE "Enable AddressSanitizer and UndefinedBehaviorSanitizer instrumentation" OFF)
 option(SDR9700_THREAD_SANITIZE "Enable ThreadSanitizer instrumentation" OFF)
 option(SDR9700_ENABLE_HIDAPI "Build optional Icom RC-28 support when hidapi is available" ON)

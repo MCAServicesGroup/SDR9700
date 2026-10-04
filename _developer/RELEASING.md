@@ -4,11 +4,12 @@ Every GitHub release must include substantive, maintainer-readable release
 notes. GitHub-generated notes may be used as source material, but a changelog
 link by itself is not an acceptable release description.
 
-Before running the macOS release workflow, configure the `macos_release`
-environment with a `main` branch restriction, required maintainer review, and
-environment-scoped Apple signing and notarization secrets. Remove any
-repository-scoped copies of those secrets. See the [macOS packaging guide](../resources/packaging/macos/README.md)
-for the required names and setup details.
+Before running the macOS release workflow, verify that the `macos_release`
+environment restricts deployments to `main` and requires maintainer review.
+The existing Apple signing and notarization secrets are repository-scoped at
+the maintainer's request and remain usable by the release workflow. Moving
+them to the environment is deferred; see the [macOS packaging guide](../resources/packaging/macos/README.md)
+for their required names and setup details.
 
 ## Version naming
 

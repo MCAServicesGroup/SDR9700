@@ -1,7 +1,7 @@
 # SDR9700 Development Status
 
 SDR9700 is under active development for Linux and Apple Silicon macOS. The
-current source version is `26.9.4`.
+current source version is `26.10.1`.
 
 ## Release State
 
@@ -18,12 +18,16 @@ current source version is `26.9.4`.
 
 ## Current Work
 
+- Prepare the signed `v26.10.1` tag, draft release, Apple Silicon DMG, and
+  release validation from the versioned `main` commit.
 - PR #56 merged the Qt 6.12 minimum and local Qt SDK setup target. Linux and
   Apple Silicon CI builds, tests, Metal rendering, and the unsigned macOS
   bundle audit pass. Signed DMG/notarization and radio/audio hardware
   validation remain.
 - PR #57 fixes Qt SDK setup for Python 3.9 on macOS; its Build and CodeQL
   checks pass. The maintainer's local Qt download remains to be confirmed.
+- PR #58 moved repository and application links to
+  `MCAServicesGroup/SDR9700` and corrected the code owner entry.
 - macOS releases now use a draft-first process: dispatch the release workflow
   from `main` for an existing signed version tag, then publish the draft only
   after the packaged DMG and release notes are reviewed.

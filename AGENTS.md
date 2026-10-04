@@ -124,9 +124,9 @@ Consolidate all such instructions here.
 - `_developer/README.md` indexes the repository-wide developer documentation.
 - `_developer/STATUS.md` is maintained by agents and records the current
   development status of SDR9700.
-- `_developer/ISSUES.md` is maintained by agents and records confirmed issues
-  identified during any project work. Add a finding when it is identified,
-  update it as work progresses, and retain its resolution history.
+- `_developer/ISSUES.md` is maintained by agents and tracks confirmed issues
+  that remain unresolved after project work. Update entries as work progresses
+  and remove them when resolved.
 - `_developer/STANDARD.md` defines repository-wide implementation and
   maintenance requirements. `CONVENTIONS.md` remains the canonical source for
   C++ and Qt coding rules.
