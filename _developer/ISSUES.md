@@ -61,19 +61,20 @@ outside the immediate task.
 
 ## Resolved Issues
 
-### SDR-0011: About dialog linked to the previous repository owner
+### SDR-0010: Qt setup rejected the macOS Python 3.9 environment
 
 - Status: `resolved`
-- Severity: `low`
-- Area: About dialog project link
-- Identified: 2026-10-03 during the GitHub repository rename
-- Evidence: `src/gui/AboutDialog.cpp` linked to `w5jwp/SDR9700` while the
-  project is maintained at `MCAServicesGroup/SDR9700`.
-- Impact: The application's project link relied on GitHub's old-location
-  redirect rather than pointing at the maintained repository directly.
-- Resolution: 2026-10-03. Point the dialog at the current organization URL and
-  update its test.
-- Related: `src/gui/AboutDialog.cpp`, `src/tests/AboutDialogTest.cpp`, PR #58
+- Severity: `medium`
+- Area: Qt SDK setup for macOS source builds
+- Identified: 2026-10-03 from a maintainer `make qt-setup` failure on macOS
+- Evidence: The helper pinned `py7zr==1.1.3`, which requires Python 3.10 or
+  newer. The maintainer's pip listed `1.0.0` as the newest compatible release
+  and could not install `1.1.3`. A Python 3.9 Apple Silicon wheel resolution
+  succeeds with `aqtinstall==3.3.0` and `py7zr==1.0.0`.
+- Impact: Qt SDK setup stopped before downloading Qt on a supported Mac.
+- Resolution: 2026-10-03. Pin `py7zr==1.0.0` and document Python 3.9 as the
+  minimum for the setup helper.
+- Related: `_developer/qt/qt_pin.env`, `_developer/scripts/setup_qt.sh`, PR #56
 
 ### SDR-0009: Duplicate Build triggers left canceled checks on the PR
 
