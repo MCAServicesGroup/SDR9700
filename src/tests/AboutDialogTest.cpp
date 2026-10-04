@@ -24,7 +24,7 @@ class AboutDialogTest final : public QObject
             {
                 description = label;
             }
-            if (label->text().contains(QStringLiteral("github.com/w5jwp/SDR9700")))
+            if (label->text().contains(QStringLiteral("github.com/MCAServicesGroup/SDR9700")))
             {
                 projectLink = label;
             }
@@ -39,7 +39,7 @@ class AboutDialogTest final : public QObject
         QVERIFY(projectLink->textInteractionFlags().testFlag(Qt::LinksAccessibleByMouse));
         QVERIFY(projectLink->textInteractionFlags().testFlag(Qt::LinksAccessibleByKeyboard));
         QCOMPARE(projectLink->accessibleName(), QStringLiteral("SDR9700 project page"));
-        QVERIFY(projectLink->text().contains(QStringLiteral("href=\"https://github.com/w5jwp/SDR9700\"")));
+        QVERIFY(projectLink->text().contains(QStringLiteral("href=\"https://github.com/MCAServicesGroup/SDR9700\"")));
     }
 };
 
