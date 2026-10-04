@@ -13,9 +13,16 @@ Consolidate all such instructions here.
 
 - Maintain the `SDR9700` repository in the **MCA Services Group**
   organization: <https://github.com/MCAServicesGroup/SDR9700>.
-- Author commits as `Justin Pauler <justin@pauler.org>`.
-- Sign every commit with the key whose fingerprint is
-  `5BB858A821B6FEFD33D8A148C3D84DCCEF6E8A03`, and verify each signature.
+- Author locally created commits as `Justin Pauler <justin@pauler.org>`.
+- Sign each locally created commit, including a local merge commit, with the key
+  whose fingerprint is `5BB858A821B6FEFD33D8A148C3D84DCCEF6E8A03`.
+  Verify its signature locally and confirm GitHub marks it as verified after
+  pushing.
+- GitHub-generated pull-request merge and squash commits may use GitHub's
+  signing key and generated author or committer metadata. Verify their
+  signatures after merging.
+- Use merge or squash for pull requests on GitHub. Do not use GitHub's Rebase
+  and Merge option because it rewrites commits without their signatures.
 - Keep this repository public.
 
 ## Project Goal
