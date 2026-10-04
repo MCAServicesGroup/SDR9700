@@ -5,11 +5,12 @@ current source version is `26.10.1`.
 
 ## Release State
 
-- `26.9.4` is the current stable GitHub release, published from signed tag
-  `v26.9.4` at commit `8427927394c2688bd09015b1daa88c6a1bd598e5`.
+- `26.10.1` is the current stable GitHub release, published from signed tag
+  `v26.10.1` at commit `84dd3bc18d174951b893e520ca97dad6b9d71cb2`.
 - The Apple Silicon release workflow built, tested, audited, signed, notarized,
-  and stapled `SDR9700-26.9.4-macOS-apple-silicon.dmg` before attaching it to
-  the GitHub release.
+  and stapled `SDR9700-26.10.1-macOS-apple-silicon.dmg` before attaching it to
+  the GitHub release. Run `37169042496` passed, and Apple Gatekeeper accepted
+  the disk image as a notarized Developer ID release.
 - The GitHub repository is public at
   <https://github.com/MCAServicesGroup/SDR9700>, as required by the repository
   policy.
@@ -18,12 +19,12 @@ current source version is `26.10.1`.
 
 ## Current Work
 
-- Prepare the signed `v26.10.1` tag, draft release, Apple Silicon DMG, and
-  release validation from the versioned `main` commit.
+- The signed `v26.10.1` tag, Apple Silicon DMG, and stable GitHub release are
+  published. Radio and audio hardware validation remains.
 - PR #56 merged the Qt 6.12 minimum and local Qt SDK setup target. Linux and
   Apple Silicon CI builds, tests, Metal rendering, and the unsigned macOS
-  bundle audit pass. Signed DMG/notarization and radio/audio hardware
-  validation remain.
+  bundle audit pass. Signed DMG and notarization validation passed in the
+  `26.10.1` release; radio/audio hardware validation remains.
 - PR #57 fixes Qt SDK setup for Python 3.9 on macOS; its Build and CodeQL
   checks pass. The maintainer's local Qt download remains to be confirmed.
 - PR #58 moved repository and application links to
@@ -51,7 +52,8 @@ current source version is `26.10.1`.
   Linux GPU panadapter, and Apple Silicon jobs. The Apple Silicon job passes
   Metal rendering tests, the full test suite, and the self-contained bundle
   audit with the official macOS 15.0 floor.
-- A signed, notarized Qt 6.12 DMG and radio/audio hardware behavior have not
+- The `26.10.1` Apple Silicon DMG passed signing, notarization, stapling, and
+  Gatekeeper assessment with Qt 6.12. Radio/audio hardware behavior has not
   yet been validated after the migration.
 
 ## Pre-Migration Validation State
